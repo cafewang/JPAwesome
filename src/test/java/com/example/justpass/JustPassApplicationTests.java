@@ -1,48 +1,50 @@
 package com.example.justpass;
 
+import com.alibaba.fastjson.JSONObject;
+import com.example.justpass.entity.Classroom;
 import com.example.justpass.entity.Student;
-import com.example.justpass.repo.StudentRepository;
-import org.hibernate.metamodel.spi.MetamodelImplementor;
-import org.hibernate.persister.entity.SingleTableEntityPersister;
+import com.example.justpass.entity.Teacher;
+import com.example.justpass.repo.TeacherRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import java.util.Arrays;
+import java.util.List;
 
 @SpringBootTest
 @ActiveProfiles("test")
 class JustPassApplicationTests {
-
     @Resource
     private EntityManager entityManager;
     @Resource
-    private StudentRepository studentRepository;
+    private TeacherRepository teacherRepository;
 
     @Test
-    void printTableStructure() {
-        EntityManagerFactory entityManagerFactory = entityManager.getEntityManagerFactory();
-        MetamodelImplementor metamodelImplementor = (MetamodelImplementor) entityManagerFactory.getMetamodel();
-        metamodelImplementor.entityPersisters().forEach((key, entityPersister) -> {
-            SingleTableEntityPersister singleTableEntityPersister = (SingleTableEntityPersister) entityPersister;
-            System.out.println(singleTableEntityPersister.getTableName());
-            singleTableEntityPersister.getAttributes().forEach(attr -> {
-                System.out.println(singleTableEntityPersister.getPropertyType(attr.getName()).getName());
-                Arrays.stream(singleTableEntityPersister.getPropertyColumnNames(attr.getName())).forEach(System.out::println);
-            });
-        });
-    }
+    @Transactional
+    void insert() {
+        Teacher teacher = Teacher.builder().name("老师").age(28L).build();
+        Classroom room1 = new Classroom();
+        room1.setNumber(1);
+        room1.setTeacher(teacher);
+        Classroom room2 = new Classroom();
+        room2.setNumber(2);
+        room2.setTeacher(teacher);
+        teacher.setClassroomList(List.of(room1, room2));
+        Student bob = Student.builder().name("bob").gender(Student.Gender.MALE).build();
+        bob.setClassroom(room1);
+        Student tom = Student.builder().name("tom").gender(Student.Gender.MALE).build();
+        tom.setClassroom(room2);
+        Student jennie = Student.builder().name("jennie").gender(Student.Gender.FEMALE).build();
+        jennie.setClassroom(room1);
+        room1.setStudentList(List.of(bob, jennie));
+        room2.setStudentList(List.of(tom));
+        teacherRepository.saveAndFlush(teacher);
+        entityManager.clear();
 
-    @Test
-    void saveAndRead() {
-        Student student = new Student();
-        student.setFirstName("ha");
-        student.setLastName("heng");
-        studentRepository.save(student);
-        System.out.println(entityManager.find(Student.class, 1L));
+        Teacher teacherFound = teacherRepository.findById("老师").orElse(null);
+        System.out.println(JSONObject.toJSONString(teacherFound.getClassroomList()));
     }
 }
