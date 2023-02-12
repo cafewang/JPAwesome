@@ -1,2 +1,2 @@
-# JustPass
+# JPAwesome
 how jpa works
