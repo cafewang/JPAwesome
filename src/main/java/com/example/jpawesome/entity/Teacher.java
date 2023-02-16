@@ -1,16 +1,17 @@
 package com.example.jpawesome.entity;
 
+import com.example.jpawesome.listener.MessageSendingListener;
+import com.example.jpawesome.listener.TeacherHistoryListener;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -18,7 +19,8 @@ import java.util.Objects;
 @Setter
 @ToString
 @RequiredArgsConstructor
-public class Student {
+@EntityListeners({ TeacherHistoryListener.class, MessageSendingListener.class })
+public class Teacher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,15 +29,15 @@ public class Student {
 
     private Integer age;
 
-
-    @Column(columnDefinition = "timestamp(3) DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Instant updateTime;
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Student student = (Student) o;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Teacher student = (Teacher) o;
         return id != null && Objects.equals(id, student.id);
     }
 
